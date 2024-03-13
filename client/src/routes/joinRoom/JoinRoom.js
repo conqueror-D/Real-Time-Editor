@@ -30,21 +30,21 @@ export default function JoinRoom() {
     return (
         <div className="joinBoxWrapper">
             <form className="joinBox" onSubmit={handleRoomSubmit}>
-                <p>Paste your invitation code down below</p>
+                <img  className="homePageLogo" src="../Logo.png" alt="logo"/>
 
                 <div className="joinBoxInputWrapper">
                     <input
                         className="joinBoxInput"
                         id="roomIdInput"
                         type="text"
-                        placeholder="Enter room ID"
+                        placeholder="Enter Room ID"
                         required
                         onChange={(e) => { setRoomId(e.target.value) }}
                         value={roomId}
                         autoSave="off"
                         autoComplete="off"
                     />
-                    <label htmlFor="roomIdInput" className="joinBoxWarning">{roomId ? '' : "Room ID required"}</label>
+                    <label htmlFor="roomIdInput" className="joinBoxWarning">{roomId ? '' : " "}</label>
                 </div>
 
                 <div className="joinBoxInputWrapper">
@@ -52,21 +52,21 @@ export default function JoinRoom() {
                         className="joinBoxInput"
                         id="usernameInput"
                         type="text"
-                        placeholder="Enter Guest Username"
+                        placeholder="Enter Username"
                         required
                         value={username}
                         onChange={e => { setUsername(e.target.value) }}
                         autoSave="off"
                         autoComplete="off"
                     />
-                    <label htmlFor="usernameInput" className="joinBoxWarning">{username ? '' : "username required"}</label>
+                    <label htmlFor="usernameInput" className="joinBoxWarning">{username ? '' : " "}</label>
                 </div>
 
                 <button className="joinBoxBtn" type="submit">Join</button>
-                <p>Don't have an invite code? Create your <span
+                <p>  If you don't have an Room ID then create <span className="Homelink"
                     style={{ textDecoration: "underline", cursor: "pointer" }}
                     onClick={createRoomId}
-                >own room</span></p>
+                >new room</span></p>
             </form>
             <Toaster />
         </div>

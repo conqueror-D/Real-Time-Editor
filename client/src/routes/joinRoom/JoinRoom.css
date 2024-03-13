@@ -6,7 +6,7 @@
 }
 
 .joinBox {
-    width: 300px;
+    width: 500px;
     display: grid;
     padding: 30px 15px;
     gap: 15px;
@@ -18,19 +18,34 @@
 
 .joinBoxBtn {
     padding: 8px 15px;
-    color: white;
-    background-color: #ffdd00;
-    border: 1px solid #ffdd00;
+    color: whitesmoke;
+    background-color: #030845;
+    border: 1px;  
     outline: none;
     border-radius: 25px;
-    font-size: 75%;
+    font-size: 110%;
     font-weight: bold;
     cursor: pointer;
     transition: all 0.45s ease-in-out 0.05s;
+    margin-left: 330px;
+    height: 40px;
+    
 }
 .joinBoxBtn:hover {
     color: black;
-    background-color: white;
+    background-color: #1055ec;
+}
+.homePageLogo{
+   
+        height: 60px;
+        margin-bottom: 30px;
+    
+}
+
+.Homelink{
+    color: #d83316;
+    font-size: 110%;
+    font-weight: bold;
 }
 
 .joinBoxInput {

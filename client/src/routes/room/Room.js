@@ -3,7 +3,8 @@ import AceEditor from "react-ace";
 import { Toaster, toast } from 'react-hot-toast';
 import { useNavigate, useParams } from "react-router-dom";
 import { generateColor } from "../../utils";
-import './Room.css'
+import './Room.css';
+import LiveChatBar from "./LiveChatBar";
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-typescript";
@@ -98,66 +99,52 @@ export default function Room({ socket }) {
 
   return (
     <div className="room">
-      <div className="roomSidebar">
-        <div className="roomSidebarUsersWrapper">
-          <div className="languageFieldWrapper">
-            <select className="languageField" name="language" id="language" value={language} onChange={handleLanguageChange}>
-              {languagesAvailable.map(eachLanguage => (
-                <option key={eachLanguage} value={eachLanguage}>{eachLanguage}</option>
+      
+        <div className="roomSidebar">
+          <div className="roomSidebarUsersWrapper">
+            <div className="languageFieldWrapper">
+              <select className="languageField" name="language" id="language" value={language} onChange={handleLanguageChange}>
+                {languagesAvailable.map(eachLanguage => (
+                  <option key={eachLanguage} value={eachLanguage}>{eachLanguage}</option>
+                ))}
+              </select>
+            </div>
+            
+
+            <div className="languageFieldWrapper">
+              <select className="languageField" name="codeKeybinding" id="codeKeybinding" value={codeKeybinding} onChange={handleCodeKeybindingChange}>
+                {codeKeybindingsAvailable.map(eachKeybinding => (
+                  <option key={eachKeybinding} value={eachKeybinding}>{eachKeybinding}</option>
+                ))}
+              </select>
+            </div>
+
+            <p>Connected Users:</p>
+            <div className="roomSidebarUsers">
+              {fetchedUsers.map((each) => (
+                <div key={each} className="roomSidebarUsersEach">
+                  <div className="roomSidebarUsersEachAvatar" style={{ backgroundColor: `${generateColor(each)}` }}>{each.slice(0, 2).toUpperCase()}</div>
+                  <div className="roomSidebarUsersEachName">{each}</div>
+                </div>
               ))}
-            </select>
+            </div>
           </div>
 
-          <div className="languageFieldWrapper">
-            <select className="languageField" name="codeKeybinding" id="codeKeybinding" value={codeKeybinding} onChange={handleCodeKeybindingChange}>
-              {codeKeybindingsAvailable.map(eachKeybinding => (
-                <option key={eachKeybinding} value={eachKeybinding}>{eachKeybinding}</option>
-              ))}
-            </select>
-          </div>
-
-          <p>Connected Users:</p>
-          <div className="roomSidebarUsers">
-            {fetchedUsers.map((each) => (
-              <div key={each} className="roomSidebarUsersEach">
-                <div className="roomSidebarUsersEachAvatar" style={{ backgroundColor: `${generateColor(each)}` }}>{each.slice(0, 2).toUpperCase()}</div>
-                <div className="roomSidebarUsersEachName">{each}</div>
-              </div>
-            ))}
-          </div>
+          <button className="roomSidebarCopyBtn" onClick={() => { copyToClipboard(roomId) }}>Copy Room id</button>
+          <button className="roomSidebarBtn" onClick={() => {
+            handleLeave()
+          }}>Leave</button>
         </div>
+       
 
-        <button className="roomSidebarCopyBtn" onClick={() => { copyToClipboard(roomId) }}>Copy Room id</button>
-        <button className="roomSidebarBtn" onClick={() => {
-          handleLeave()
-        }}>Leave</button>
-      </div>
+       
+      
 
-      <AceEditor
-        placeholder="Write your code here."
-        className="roomCodeEditor"
-        mode={language}
-        keyboardHandler={codeKeybinding}
-        theme="monokai"
-        name="collabEditor"
-        width="auto"
-        height="auto"
-        value={fetchedCode}
-        onChange={onChange}
-        fontSize={15}
-        showPrintMargin={true}
-        showGutter={true}
-        highlightActiveLine={true}
-        enableLiveAutocompletion={true}
-        enableBasicAutocompletion={false}
-        enableSnippets={false}
-        wrapEnabled={true}
-        tabSize={2}
-        editorProps={{
-          $blockScrolling: true
-        }}
-      />
+        <iframe title="Code Board" src="https://codeboard.netlify.app" className="roomCodeEditor" />
       <Toaster />
+      <div className="chatsidebar">
+       <LiveChatBar />
+       </div>
     </div>
   )
 }
