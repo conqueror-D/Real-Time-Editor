@@ -5,6 +5,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { generateColor } from "../../utils";
 import './Room.css';
 import LiveChatBar from "./LiveChatBar";
+import { useLocation } from 'react-router-dom';
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-typescript";
@@ -24,6 +25,8 @@ import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/ext-searchbox";
 
 export default function Room({ socket }) {
+  const location = useLocation();
+  const { username, roomIdToCreatorName, roomIdToRoomName } = location.state || {};
   const navigate = useNavigate()
   const { roomId } = useParams()
   const [fetchedUsers, setFetchedUsers] = useState(() => [])
@@ -31,8 +34,14 @@ export default function Room({ socket }) {
   const [language, setLanguage] = useState(() => "javascript")
   const [codeKeybinding, setCodeKeybinding] = useState(() => undefined)
 
-  const languagesAvailable = ["javascript", "java", "c_cpp", "python", "typescript", "golang", "yaml", "html"]
-  const codeKeybindingsAvailable = ["default", "emacs", "vim"]
+  const languagesAvailable = ["javascript", "java", "c_cpp", "python", "typescript", "golang", "yaml", "html"];
+  const codeKeybindingsAvailable = ["default", "emacs", "vim"];
+
+  useEffect(() => {
+    console.log('Username:', username);
+    console.log('Room ID to Creator Name Map:', roomIdToCreatorName);
+    console.log('Room ID to Room Name Map:', roomIdToRoomName);
+  }, []);
 
   function onChange(newValue) {
     setFetchedCode(newValue)
@@ -58,7 +67,7 @@ export default function Room({ socket }) {
   function copyToClipboard(text) {
     try {
       navigator.clipboard.writeText(text);
-      toast.success('Room ID copied')
+      toast.success('Room ID copied');
     } catch (exp) {
       console.error(exp)
     }
@@ -77,12 +86,12 @@ export default function Room({ socket }) {
       setFetchedCode(code)
     })
 
-    socket.on("new member joined", ({ username }) => {
-      toast(`${username} joined`)
+    socket.on("new member joined", ({ userName }) => {
+      toast(`${userName} joined`)
     })
 
-    socket.on("member left", ({ username }) => {
-      toast(`${username} left`)
+    socket.on("member left", ({ userName }) => {
+      toast(`${userName} left`)
     })
 
     const backButtonEventListner = window.addEventListener("popstate", function (e) {
@@ -99,52 +108,47 @@ export default function Room({ socket }) {
 
   return (
     <div className="room">
-      
-        <div className="roomSidebar">
-          <div className="roomSidebarUsersWrapper">
-            <div className="languageFieldWrapper">
-              <select className="languageField" name="language" id="language" value={language} onChange={handleLanguageChange}>
-                {languagesAvailable.map(eachLanguage => (
-                  <option key={eachLanguage} value={eachLanguage}>{eachLanguage}</option>
-                ))}
-              </select>
-            </div>
-            
 
-            <div className="languageFieldWrapper">
-              <select className="languageField" name="codeKeybinding" id="codeKeybinding" value={codeKeybinding} onChange={handleCodeKeybindingChange}>
-                {codeKeybindingsAvailable.map(eachKeybinding => (
-                  <option key={eachKeybinding} value={eachKeybinding}>{eachKeybinding}</option>
-                ))}
-              </select>
-            </div>
-
-            <p>Connected Users:</p>
-            <div className="roomSidebarUsers">
-              {fetchedUsers.map((each) => (
-                <div key={each} className="roomSidebarUsersEach">
-                  <div className="roomSidebarUsersEachAvatar" style={{ backgroundColor: `${generateColor(each)}` }}>{each.slice(0, 2).toUpperCase()}</div>
-                  <div className="roomSidebarUsersEachName">{each}</div>
-                </div>
+      <div className="roomSidebar">
+        <div className="roomSidebarUsersWrapper">
+          <div className="languageFieldWrapper">
+            <select className="languageField" name="language" id="language" value={language} onChange={handleLanguageChange}>
+              {languagesAvailable.map(eachLanguage => (
+                <option key={eachLanguage} value={eachLanguage}>{eachLanguage}</option>
               ))}
-            </div>
+            </select>
           </div>
 
-          <button className="roomSidebarCopyBtn" onClick={() => { copyToClipboard(roomId) }}>Copy Room id</button>
-          <button className="roomSidebarBtn" onClick={() => {
-            handleLeave()
-          }}>Leave</button>
+
+          <div className="languageFieldWrapper">
+            <select className="languageField" name="codeKeybinding" id="codeKeybinding" value={codeKeybinding} onChange={handleCodeKeybindingChange}>
+              {codeKeybindingsAvailable.map(eachKeybinding => (
+                <option key={eachKeybinding} value={eachKeybinding}>{eachKeybinding}</option>
+              ))}
+            </select>
+          </div>
+
+          <p>Connected Users:</p>
+          <div className="roomSidebarUsers">
+            {fetchedUsers.map((each) => (
+              <div key={each} className="roomSidebarUsersEach">
+                <div className="roomSidebarUsersEachAvatar" style={{ backgroundColor: `${generateColor(each)}` }}>{each.slice(0, 2).toUpperCase()}</div>
+                <div className="roomSidebarUsersEachName">{each}</div>
+              </div>
+            ))}
+          </div>
         </div>
-       
 
-       
-      
-
-        <iframe title="Code Board" src="https://codeboard.netlify.app" className="roomCodeEditor" />
+        <button className="roomSidebarCopyBtn" onClick={() => { copyToClipboard(roomId) }}>Copy Room id</button>
+        <button className="roomSidebarBtn" onClick={() => {
+          handleLeave()
+        }}>Leave</button>
+      </div>
+      <iframe title="Code Board" src="https://codeboard.netlify.app" className="roomCodeEditor" />
       <Toaster />
       <div className="chatsidebar">
-       <LiveChatBar />
-       </div>
+        <LiveChatBar />
+      </div>
     </div>
   )
 }

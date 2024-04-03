@@ -2,6 +2,7 @@ const app = require('express')()
 const http = require('http')
 const { Server } = require('socket.io')
 const cors = require("cors")
+const mysql = require('mysql');
 
 app.use(cors())
 
@@ -15,19 +16,18 @@ const io = new Server(server, {
 })
 
 app.get('/', function (req, res) {
-  res.send('Hello from the server!')
-})
+  res.send('Hello from the server!');
+});
 
 const socketID_to_Users_Map = {}
 const roomID_to_Code_Map = {}
 
 async function getUsersinRoom(roomId, io) {
-  const socketList = await io.in(roomId).allSockets()
+  const socketList = await io.in(roomId).allSockets();
   const userslist = []
   socketList.forEach((each => {
     (each in socketID_to_Users_Map) && userslist.push(socketID_to_Users_Map[each].username)
   }))
-
   return userslist
 }
 
