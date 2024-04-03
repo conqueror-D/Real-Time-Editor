@@ -1,0 +1,75 @@
+.home {
+  background: #000000bf;
+  background-image: linear-gradient(
+      to right,
+      rgba(11, 116, 196, 0.945),
+      rgba(0, 0, 0, 0.611),
+      black,
+      rgba(225, 28, 28, 0.587)
+    ),
+    url("https://i.postimg.cc/ryW7Qfsg/Default-collaborative-Coding-in-IT-industry-Dark-theme-Silent-3.jpg");
+  background-repeat: no-repeat;
+  background-position: top;
+  background-size: 100%;
+  height: 100vh;
+  text-align: center;
+  padding: 5% 0%;
+}
+
+.home > * {
+  color: white;
+}
+
+.home h1 {
+  font-size: 70px;
+  font-weight: bolder;
+  color: white;
+}
+
+.home p {
+  margin-bottom: 10px;
+}
+
+.home .heading {
+  font-size: 30px;
+  margin: 30px;
+  font-weight: bolder;
+  color: rgba(255, 217, 0, 0.964);
+  margin-bottom: 50px;
+  font-style: italic;
+}
+
+.home .description {
+  font-size: 25px;
+}
+
+.btn {
+  padding: 1% 3%;
+  color: black;
+  font: 1.5em sans-serif;
+  font-weight: 500;
+  background-color: orange;
+  border-radius: 15px;
+}
+
+.btn:hover {
+  background-color: transparent;
+  transition: all ease-in-out 0.5s;
+  color: orange;
+  font-weight: 700;
+  border: solid orange 2px;
+}
+
+.desc {
+  color: rgb(0, 0, 0);
+}
+
+.githubcorner {
+  right: 0;
+  top: 0;
+  position: absolute;
+}
+
+.githubcorner:hover .octo-arm {
+  animation: octocat-wave 560ms ease-in-out;
+}
