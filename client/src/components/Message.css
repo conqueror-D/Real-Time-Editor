@@ -1,0 +1,38 @@
+.chat-bubble {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.chat-bubble__left {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+
+.chat-bubble__right {
+  flex-grow: 1;
+  padding-left: 10px;
+}
+
+.user-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.user-message {
+  margin: 0;
+  font-size: 15px;
+}
+
+.chat-bubble.right {
+  flex-direction: row-reverse;
+}
+
+.chat-bubble.right .chat-bubble__left {
+  margin-left: 10px;
+}
+
+.chat-bubble.right .chat-bubble__right {
+  padding-right: 10px;
+}
