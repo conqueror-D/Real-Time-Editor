@@ -1,9 +1,10 @@
-import React from 'react';
+import React from "react";
+import ChatBox from "../../components/ChatBox";
 
 const LiveChatBar = () => {
   return (
     <div className="liveChatBar">
-     Live Chat...
+      <ChatBox />
     </div>
   );
 };

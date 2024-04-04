@@ -1,11 +1,48 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { useNavigate } from "react-router";
 import styles from "./main.module.css";
 import { auth } from "../../firebase";
-import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
+import NavBar from "../NavBar";
+import {
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+} from "firebase/auth";
 
 const HomeComponent = () => {
-  const userId = auth.currentUser ? auth.currentUser.uid : null;
+  const history = { useNavigate };
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      console.log("Auth object:", auth); // Log the auth object
+      console.log("Current User:", user); // Log the currentUser
+      if (user) {
+        setUser(user);
+        history.push("/room"); // Redirect to "/room" if user is logged in
+      } else {
+        setUser(null);
+      }
+    });
+
+    // Check if there is a redirect result
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result.user) {
+          setUser(result.user);
+          history.push("/room"); // Redirect to "/room" if user is logged in
+        }
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [history]);
+
   const googleSignIn = () => {
     const provider = new GoogleAuthProvider();
     signInWithRedirect(auth, provider);
@@ -13,6 +50,7 @@ const HomeComponent = () => {
 
   return (
     <>
+      <NavBar />
       <div className={styles.home}>
         <h1>CoLive Coder</h1>
         <p className={styles.heading}>
@@ -26,7 +64,7 @@ const HomeComponent = () => {
           CodePair platform.
         </p>
 
-        {!userId ? (
+        {!user ? (
           <button onClick={googleSignIn} className={styles.btn}>
             Get Started
           </button>

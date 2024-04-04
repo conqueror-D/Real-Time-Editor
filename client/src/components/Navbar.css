@@ -1,0 +1,37 @@
+.nav-bar {
+  background-color: #333;
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 70px;
+}
+
+.nav-bar h1 {
+  margin: 0;
+}
+
+.sign-in {
+  background-color: #4285f4;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.sign-in img {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+}
+
+.sign-out {
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+}

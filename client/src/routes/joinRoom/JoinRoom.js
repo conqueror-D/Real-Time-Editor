@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4, validate } from "uuid";
+import { auth } from "../../firebase";
 import { Toaster, toast } from "react-hot-toast";
 import "./JoinRoom.css";
 
@@ -8,10 +9,11 @@ import "./JoinRoom.css";
 const PopupForm = ({ isOpen, onClose, onCreateRoom }) => {
   const [roomName, setRoomName] = useState("");
   const [creatorName, setCreatorName] = useState("");
+  const currentUser = auth.currentUser.displayName;
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onCreateRoom(roomName, creatorName, creatorName);
+    onCreateRoom(roomName, currentUser, creatorName);
     onClose();
   };
 
@@ -34,7 +36,7 @@ const PopupForm = ({ isOpen, onClose, onCreateRoom }) => {
           <input
             type="text"
             placeholder="Room creator's name"
-            value={creatorName}
+            value={currentUser}
             onChange={(e) => setCreatorName(e.target.value)}
             required
           />
