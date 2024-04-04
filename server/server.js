@@ -2,6 +2,7 @@ const app = require("express")();
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
+const { createConnection } = require('mysql');
 
 app.use(cors());
 
@@ -10,9 +11,29 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"],
-  },
-});
+    methods: ["GET", "POST"]
+  }
+})
+
+//DB*****
+const connection = createConnection({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'codeeditor'
+})
+
+//insert into users values('Kamlesh','22', 'Kamlesh@shintre@gmail.com', 'Male')
+const id = `uenfno4853nfnvo3`;
+const userName = `Juned`;
+const insertQuery = `Insert into users(id,userName) values(?,?)`;
+
+connection.query(`SELECT * FROM USERS`, (err, result) => {
+  if (err) return console.log(err);
+  return console.log(result);
+})
+
+connection.end();
 
 app.get("/", function (req, res) {
   res.send("Hello from the server!");
