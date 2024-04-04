@@ -28,33 +28,41 @@ app.get("/", function (req, res) {
 //   database: 'code_editor'
 // })
 //THIS IS TESTING
-// connection.query(`select * from userInfo where id = 0`, (err, rows) => {
+// connection.query(query, (err, res) => {
 //   if (err) return console.log(err);
-//   return console.log(rows);
+//   return console.log(res);
 // })
 
 // //INSERTING INTO THE DB
 // app.post('/database', function (req, res) {
-//   const { roomId, username, roomName, uid } = req.body;
-//   console.log("Uid: " + uid);
-//   connection.query(`select * from userInfo where id = ?`, [uid], (err, row) => {
+//   const { roomId, roomName, uid, username } = req.body;
+//   const insertUser = `insert into userInfo values(?,?)`
+//   connection.query(`select * from userInfo where id = ?`, [uid], (err, rows) => {
 //     if (err) return console.log(err);
-//     return console.log("Rows: " + row);
+//     const len = rows.length;
+//     console.log("Number of rows: " + len);
+//     if (len != 0) {
+//       console.log("Already entered!!");
+//     } else {
+//       connection.query(insertUser, [uid, username], (err, result) => {
+//         if (err) return console.log(err);
+//         return console.log(result);
+//       })
+//     }
 //   })
-//   // const insertUser = `insert into userInfo values(?,?)`
-//   // if (roomName) {
-//   //   const insertNewMeeting = `insert into meetinginfo values(?,?)`;
-//   //   connection.query(insertNewMeeting, [roomId, roomName], (err, result) => {
-//   //     if (err) return console.log(err);
-//   //     return console.log(result);
-//   //   })
-//   // }
-//   // if (!containsPK) {
-//   //   connection.query(insertUser, [uid, username], (err, result) => {
-//   //     if (err) return console.log(err);
-//   //     return console.log(result);
-//   //   })
-//   // }
+//   //Creation of a new room
+//   if (roomName) {
+//     const insertNewMeeting = `insert into meetinginfo values(?,?)`;
+//     connection.query(insertNewMeeting, [roomId, roomName], (err, result) => {
+//       if (err) return console.log(err);
+//       return console.log(result);
+//     })
+//     connection.query(`insert into meetingstocreator(meetingid, userid) values(?,?)`,
+//       [roomId, uid], (err, result) => {
+//         if (err) return console.log(err);
+//         return console.log(result);
+//       })
+//   }
 // });
 
 const socketID_to_Users_Map = {};
