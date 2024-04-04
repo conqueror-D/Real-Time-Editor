@@ -36,7 +36,7 @@ const HomeComponent = () => {
           </Link>
         )}
         <a
-          href="https://github.com/Akash-Ramjyothi/a-Live-Coder"
+          href=""
           className={styles.githubcorner}
           aria-label="View source on GitHub"
         >
