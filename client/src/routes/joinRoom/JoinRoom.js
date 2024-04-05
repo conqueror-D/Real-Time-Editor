@@ -1,19 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { v4 as uuidv4, validate } from "uuid";
 import { auth } from "../../firebase";
 import { Toaster, toast } from "react-hot-toast";
 import "./JoinRoom.css";
 
-// PopupForm component for creating a new room
-const PopupForm = ({ isOpen, onClose, onCreateRoom }) => {
+const LoginForm = ({ isOpen, onClose, onCreateRoom }) => {
   const [roomName, setRoomName] = useState("");
-  const [creatorName, setCreatorName] = useState("");
-  const currentUser = auth.currentUser.displayName;
+  const [userName, setUserName] = useState("");
+  const [userId, setUserId] = useState("");
+
+  useEffect(() => {
+    const currentUser = auth.currentUser.displayName;
+    const currentId = auth.currentUser.uid;
+    if (currentUser && currentId) {
+      setUserId(currentId);
+      setUserName(currentUser);
+    };
+    // console.log("User name: " + currentUser + " User id: " + currentId);
+  }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onCreateRoom(roomName, currentUser, creatorName);
+    onCreateRoom(roomName);
     onClose();
   };
 
@@ -36,8 +45,8 @@ const PopupForm = ({ isOpen, onClose, onCreateRoom }) => {
           <input
             type="text"
             placeholder="Room creator's name"
-            value={currentUser}
-            onChange={(e) => setCreatorName(e.target.value)}
+            value={userName}
+            readOnly
             required
           />
           <button type="submit">Create</button>
@@ -47,26 +56,62 @@ const PopupForm = ({ isOpen, onClose, onCreateRoom }) => {
     </div>
   );
 };
-
 export default function JoinRoom() {
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState("");
   const [username, setUsername] = useState("");
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [joinRoom, setJoinRoom] = useState(true);
-  const [roomIdToCreatorName, setRoomIdToCreatorName] = useState(new Map());
-  const [roomIdToRoomName, setRoomIdToRoomName] = useState(new Map());
   const [changable, setChangable] = useState(false);
+  const [roomName, setRoomName] = useState();
+  const [uid, setUid] = useState("");
 
-  function handleRoomSubmit(e) {
+  useEffect(() => {
+    const currentUser = auth.currentUser.displayName;
+    const currentId = auth.currentUser.uid;
+    if (currentUser && currentId) {
+      setUid(currentId);
+      setUsername(currentUser);
+    };
+    // console.log("User name: " + currentUser + " User id: " + currentId);
+  }, []);
+
+  const handleRoomSubmit = async (e) => {
     e.preventDefault();
     if (!validate(roomId)) {
       toast.error("Incorrect room ID");
       return;
     }
+    try {
+      username &&
+        navigate(`/room/${roomId}`, {
+          state: { username },
+        });
+      // const response = await fetch('http://localhost:5000/database', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     roomId: roomId,
+      //     username: username,
+      //     roomName: roomName,
+      //     uid: uid,
+      //   }),
+      // });
+
+      // if (!response.ok) {
+      //   throw new Error('Failed to send data to server');
+      // }
+      toast.success('Data sent to server successfully');
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to send data to server');
+    }
+    toast.success("Joined " + roomName);
     username &&
       navigate(`/room/${roomId}`, {
-        state: { username, roomIdToCreatorName, roomIdToRoomName },
+        state: { username },
       });
   }
 
@@ -75,20 +120,17 @@ export default function JoinRoom() {
     setJoinRoom(false);
   }
 
-  const handleCreateRoom = (roomName, creatorName, userName) => {
+  const handleCreateRoom = (rName) => {
     try {
       const id = uuidv4();
       setRoomId(id);
-      setUsername(userName);
-      setRoomIdToRoomName((prevMap) => new Map(prevMap).set(id, roomName));
-      setRoomIdToCreatorName((prevMap) =>
-        new Map(prevMap).set(id, creatorName)
-      );
-      toast.success("Room created: " + roomName);
+      setRoomName(rName);
+      toast.success("Room created: " + rName);
     } catch (exp) {
       console.error(exp);
     }
   };
+
   return (
     <div className="joinBoxWrapper">
       {joinRoom && (
@@ -150,7 +192,7 @@ export default function JoinRoom() {
         </form>
       )}
       <Toaster />
-      <PopupForm
+      <LoginForm
         isOpen={isPopupOpen}
         onClose={() => {
           setIsPopupOpen(false);

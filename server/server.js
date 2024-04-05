@@ -1,11 +1,12 @@
 const app = require("express")();
+const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
-const { createConnection } = require('mysql');
+// const { createPool } = require('mysql');
 
 app.use(cors());
-
+app.use(express.json());
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -14,30 +15,55 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 })
-
-//DB*****
-const connection = createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: '',
-  database: 'codeeditor'
-})
-
-//insert into users values('Kamlesh','22', 'Kamlesh@shintre@gmail.com', 'Male')
-const id = `uenfno4853nfnvo3`;
-const userName = `Juned`;
-const insertQuery = `Insert into users(id,userName) values(?,?)`;
-
-connection.query(`SELECT * FROM USERS`, (err, result) => {
-  if (err) return console.log(err);
-  return console.log(result);
-})
-
-connection.end();
-
 app.get("/", function (req, res) {
   res.send("Hello from the server!");
-});
+})
+
+//DB*****
+// const connection = createPool({
+//   connectionLimit: 10,
+//   host: 'localhost',
+//   user: 'root',
+//   password: '',
+//   database: 'code_editor'
+// })
+//THIS IS TESTING
+// connection.query(query, (err, res) => {
+//   if (err) return console.log(err);
+//   return console.log(res);
+// })
+
+// //INSERTING INTO THE DB
+// app.post('/database', function (req, res) {
+//   const { roomId, roomName, uid, username } = req.body;
+//   const insertUser = `insert into userInfo values(?,?)`
+//   connection.query(`select * from userInfo where id = ?`, [uid], (err, rows) => {
+//     if (err) return console.log(err);
+//     const len = rows.length;
+//     console.log("Number of rows: " + len);
+//     if (len != 0) {
+//       console.log("Already entered!!");
+//     } else {
+//       connection.query(insertUser, [uid, username], (err, result) => {
+//         if (err) return console.log(err);
+//         return console.log(result);
+//       })
+//     }
+//   })
+//   //Creation of a new room
+//   if (roomName) {
+//     const insertNewMeeting = `insert into meetinginfo values(?,?)`;
+//     connection.query(insertNewMeeting, [roomId, roomName], (err, result) => {
+//       if (err) return console.log(err);
+//       return console.log(result);
+//     })
+//     connection.query(`insert into meetingstocreator(meetingid, userid) values(?,?)`,
+//       [roomId, uid], (err, result) => {
+//         if (err) return console.log(err);
+//         return console.log(result);
+//       })
+//   }
+// });
 
 const socketID_to_Users_Map = {};
 const roomID_to_Code_Map = {};
