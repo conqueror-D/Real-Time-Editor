@@ -2,11 +2,13 @@ import React from "react";
 import { auth } from "../firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import "./Message.css";
+
 const Message = ({ message }) => {
   const [user] = useAuthState(auth);
+  const isSender = message.uid === user.uid;
 
   return (
-    <div className={`chat-bubble ${message.uid === user.uid ? "right" : ""}`}>
+    <div className={`chat-bubble ${isSender ? "right" : ""}`}>
       <img
         className="chat-bubble__left"
         src={message.avatar}
@@ -19,4 +21,5 @@ const Message = ({ message }) => {
     </div>
   );
 };
+
 export default Message;

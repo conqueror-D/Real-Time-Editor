@@ -183,22 +183,6 @@ export default function Room({ socket }) {
 
       <div className="roomSidebar">
         <div className="roomSidebarUsersWrapper">
-          <div className="languageFieldWrapper">
-            <select className="languageField" name="language" id="language" value={language} onChange={handleLanguageChange}>
-              {languagesAvailable.map(eachLanguage => (
-                <option key={eachLanguage} value={eachLanguage}>{eachLanguage}</option>
-              ))}
-            </select>
-          </div>
-
-          <div className="languageFieldWrapper">
-            <select className="languageField" name="codeKeybinding" id="codeKeybinding" value={codeKeybinding} onChange={handleCodeKeybindingChange}>
-              {codeKeybindingsAvailable.map(eachKeybinding => (
-                <option key={eachKeybinding} value={eachKeybinding}>{eachKeybinding}</option>
-              ))}
-            </select>
-          </div>
-
           <p>Connected Users:</p>
           <div className="roomSidebarUsers">
             {fetchedUsers.map((each) => (

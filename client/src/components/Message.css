@@ -3,53 +3,48 @@
   margin-bottom: 10px;
 }
 
+.liveChatBar {
+  width: 300px;
+}
+
 .chat-bubble__left {
-  width: 30px;
-  height: 30px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
+  margin-right: 10px;
 }
 
 .chat-bubble__right {
-  flex-grow: 1;
-  padding-left: 10px;
+  background-color: #f0f0f0;
+  border-radius: 12px;
+  padding: 8px 12px;
+  max-width: 70%;
+}
+
+.chat-bubble__right p {
+  margin: 0;
 }
 
 .user-name {
-  margin: 0;
-  font-size: 20px;
   font-weight: bold;
+  font-size: 14px; /* Reduced font size for user name */
 }
 
 .user-message {
-  margin: 0;
-  font-size: 15px;
+  color: #333;
+  font-size: 16px; /* Reduced font size for message text */
 }
 
+/* Style for sender's message */
 .chat-bubble.right {
-  flex-direction: row-reverse;
-}
-
-.chat-bubble.right .chat-bubble__left {
-  margin-left: 10px;
+  justify-content: flex-end; /* Align sender's message to the right */
 }
 
 .chat-bubble.right .chat-bubble__right {
-  padding-right: 10px;
+  background-color: #007bff;
+  color: #fff;
 }
 
-/* New CSS to differentiate sender messages */
-.chat-bubble__right {
-  background-color: #dcf8c6; /* Light green background for sender messages */
-  border-radius: 10px;
-  padding: 8px;
-}
-
-.chat-bubble__left {
-  background-color: #e0e0e0; /* Light grey background for recipient messages */
-  border-radius: 10px;
-  padding: 8px;
-}
-
-.chat-bubble {
-  max-width: 70%; /* Limiting message width for better readability */
+.chat-bubble.right .user-name {
+  color: #fff;
 }

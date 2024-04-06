@@ -52,12 +52,12 @@ const HomeComponent = () => {
     <>
       <NavBar />
       <div className={styles.home}>
-        <h1>CoLive Coder</h1>
+        <h1>CodeX</h1>
         <p className={styles.heading}>
           A Collaborative Code editor for pair programming, interviews, teaching
-          and a lot more. The "a-Live Coder" is a code pair platform where users
-          can share an interactive editor and write code together. It has
-          language support for C++, Java, and Python. This application is based
+          and a lot more. The "CodeX" is a code pair platform where users
+          can share an interactive editor and write code together. It has Multi
+          language support. This application is based
           on the concept of operational transformation which forms the basis for
           a shared editor. Video calling is also provided within this
           application. It has some similar features as provided by HackerRank's
@@ -74,7 +74,7 @@ const HomeComponent = () => {
           </Link>
         )}
         <a
-          href=""
+          href="https://github.com/Theatharv31/Real-Time-Code-Editing-Tool-with-Live-chat.git"
           className={styles.githubcorner}
           aria-label="View source on GitHub"
         >

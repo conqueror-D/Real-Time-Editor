@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { auth, db } from "../firebase";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import "./SendMessage.css";
 
 const SendMessage = () => {
   const sendMessage = async (event) => {
     event.preventDefault();
     if (message.trim() === "") {
-      alert("Enter valid message");
+      alert("Enter a valid message");
       return;
     }
     const { uid, displayName, photoURL } = auth.currentUser;
@@ -19,7 +20,9 @@ const SendMessage = () => {
     });
     setMessage("");
   };
+
   const [message, setMessage] = useState("");
+
   return (
     <form onSubmit={(event) => sendMessage(event)} className="send-message">
       <label htmlFor="messageInput" hidden>
@@ -30,11 +33,11 @@ const SendMessage = () => {
         name="messageInput"
         type="text"
         className="form-input__input"
-        placeholder="type message..."
+        placeholder="Type a message..."
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
-      <button type="submit">Send</button>
+      <button type="submit" className="send-button">Send</button>
     </form>
   );
 };
