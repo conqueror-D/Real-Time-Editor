@@ -31,12 +31,13 @@ const LoginForm = ({ isOpen, onClose, onCreateRoom }) => {
   }
 
   return (
-    <div className="popup-container">
+    <div className="joinBoxWrapper">
       <div className="popup">
         <h2>Create New Room</h2>
-        <form onSubmit={handleSubmit}>
+        <form className="joinBox" onSubmit={handleSubmit}>
           <input
             type="text"
+            className="joinBoxInput"
             placeholder="Room Name"
             value={roomName}
             onChange={(e) => setRoomName(e.target.value)}
@@ -44,14 +45,19 @@ const LoginForm = ({ isOpen, onClose, onCreateRoom }) => {
           />
           <input
             type="text"
+            className="joinBoxInput"
             placeholder="Room creator's name"
             value={userName}
             readOnly
             required
           />
-          <button type="submit">Create</button>
+          <button className="createbutton" type="submit">
+            Create
+          </button>
+          <button className="closebutton" onClick={onClose}>
+            Close
+          </button>
         </form>
-        <button onClick={onClose}>Close</button>
       </div>
     </div>
   );
