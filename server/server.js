@@ -3,7 +3,7 @@ const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 const cors = require("cors");
-// const { createPool } = require('mysql');
+const { createPool } = require('mysql');
 
 app.use(cors());
 app.use(express.json());
@@ -19,51 +19,133 @@ app.get("/", function (req, res) {
   res.send("Hello from the server!");
 })
 
-//DB*****
-// const connection = createPool({
-//   connectionLimit: 10,
-//   host: 'localhost',
-//   user: 'root',
-//   password: '',
-//   database: 'code_editor'
-// })
-//THIS IS TESTING
-// connection.query(query, (err, res) => {
-//   if (err) return console.log(err);
-//   return console.log(res);
-// })
+// DB*****
+const connection = createPool({
+  connectionLimit: 10,
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'code_editor'
+})
+
+//Getting creatorId from meeting id
+app.get('/getCreator/:roomId', async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    console.log("Room id is:", roomId);
+
+    const creatorId = await findCreatorId(roomId);
+    console.log(creatorId);
+    res.json({ creatorId });
+  } catch (error) {
+    console.error('Error fetching creatorId:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+async function findCreatorId(roomId) {
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT userId FROM meetingstocreator WHERE meetId = ?';
+    connection.query(sql, [roomId], (err, results) => {
+      if (err) {
+        console.error("Error querying database:", err);
+        reject(err);
+        return;
+      }
+      if (results.length === 0) {
+        // Consider how you want to handle this case, e.g., throw an error or return null
+        resolve(null);
+        return;
+      }
+      const creatorId = results[0].userId;
+      // console.log('Creator ID:', creatorId);
+      resolve(creatorId);
+    });
+  });
+}
+
+async function findUserName(userId) {
+  return new Promise((resolve, reject) => {
+    const sql = 'SELECT userName FROM userinfo WHERE userId = ?';
+    connection.query(sql, [userId], (err, results) => {
+      if (err) {
+        console.error("Error querying database:", err);
+        reject(err);
+        return;
+      }
+      if (results.length === 0) {
+        // Consider how you want to handle this case, e.g., throw an error or return null
+        resolve(null);
+        return;
+      }
+      const userName = results[0].userName;
+      resolve(userName);
+    });
+  });
+}
+
+app.get('/getRoomName/:roomId', (req, res) => {
+  const { roomId } = req.params;
+  console.log("Room id is:", roomId);
+  const sql = 'SELECT meetName FROM meetinginfo WHERE meetId = ?';
+  connection.query(sql, [roomId], (err, results) => {
+    if (err) {
+      console.log("PPRRRR LOOSER");
+      console.log(err);
+      return
+    }
+    if (results.length === 0) {
+      res.status(404).json({ error: 'Meeting not found' });
+      return;
+    }
+    const rName = results[0].meetName;
+    // console.log('Room name:', rName);
+    res.json({ rName });
+  });
+});
 
 // //INSERTING INTO THE DB
-// app.post('/database', function (req, res) {
-//   const { roomId, roomName, uid, username } = req.body;
-//   const insertUser = `insert into userInfo values(?,?)`
-//   connection.query(`select * from userInfo where id = ?`, [uid], (err, rows) => {
-//     if (err) return console.log(err);
-//     const len = rows.length;
-//     console.log("Number of rows: " + len);
-//     if (len != 0) {
-//       console.log("Already entered!!");
-//     } else {
-//       connection.query(insertUser, [uid, username], (err, result) => {
-//         if (err) return console.log(err);
-//         return console.log(result);
-//       })
-//     }
-//   })
-//   //Creation of a new room
-//   if (roomName) {
-//     const insertNewMeeting = `insert into meetinginfo values(?,?)`;
-//     connection.query(insertNewMeeting, [roomId, roomName], (err, result) => {
-//       if (err) return console.log(err);
-//       return console.log(result);
-//     })
-//     connection.query(`insert into meetingstocreator(meetingid, userid) values(?,?)`,
-//       [roomId, uid], (err, result) => {
-//         if (err) return console.log(err);
-//         return console.log(result);
-//       })
-//   }
-// });
+app.post('/database', async function (req, res) {
+  const { roomId, roomName, uid, username } = req.body;
+  const insertUser = 'INSERT INTO userInfo (userId, userName) VALUES (?, ?)';
+  const insertNewMeeting = 'INSERT INTO meetinginfo (meetId, meetName) VALUES (?, ?)';
+
+  try {
+    // Check if user already exists
+    const userRows = await query('SELECT * FROM userInfo WHERE userId = ?', [uid]);
+    if (userRows.length === 0) {
+      await query(insertUser, [uid, username]);
+    }
+    // Check if meeting already exists
+    const meetingRows = await query('SELECT * FROM meetinginfo WHERE meetId = ?', [roomId]);
+    if (meetingRows.length === 0) {
+      await query(insertNewMeeting, [roomId, roomName]);
+    }
+    // Insert into meetingstocreator
+    if (roomName) {
+      console.log("I am joining: ", roomName);
+      await query('INSERT INTO meetingstocreator (meetId, userId) VALUES (?, ?)', [roomId, uid]);
+    }
+
+    console.log('Data inserted successfully');
+    res.status(200).send('Data inserted successfully');
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+function query(sql, values) {
+  return new Promise((resolve, reject) => {
+    connection.query(sql, values, (err, rows) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(rows);
+      }
+    });
+  });
+}
 
 const socketID_to_Users_Map = {};
 const roomID_to_Code_Map = {};
@@ -101,7 +183,6 @@ io.on("connection", function (socket) {
     socket.join(roomId);
 
     const userslist = await getUsersinRoom(roomId, io);
-
     // for other users, updating the client list
     socket.in(roomId).emit("updating client list", { userslist: userslist });
 
@@ -117,7 +198,7 @@ io.on("connection", function (socket) {
         code: roomID_to_Code_Map[roomId].code,
       });
     }
-
+    console.log("Username: ", username, " roomId: ", roomId);
     // alerting other users in room that new user joined
     socket.in(roomId).emit("new member joined", {
       username,
@@ -132,6 +213,18 @@ io.on("connection", function (socket) {
       roomID_to_Code_Map[roomId] = { languageUsed };
     }
   });
+
+  socket.on("join_room_request", async ({ roomId, userId }) => {
+    const creatorId = await findCreatorId(roomId);
+    const guestName = await findUserName(userId);
+    socket.in(roomId).emit("join_req_to_user", { creatorId, userId, guestName });
+  })
+
+  socket.on("response_from_creator", async ({ res, roomId }) => {
+    console.log("Room ID used for emitting:", roomId);
+    io.emit("creators_response", { res, roomId });
+    console.log("done");
+  })
 
   // for user editing the code to reflect on his/her screen
   socket.on("syncing the language", ({ roomId }) => {
@@ -153,6 +246,7 @@ io.on("connection", function (socket) {
 
   // for user editing the code to reflect on his/her screen
   socket.on("syncing the code", ({ roomId }) => {
+    console.log("Editing in " + roomId);
     if (roomId in roomID_to_Code_Map) {
       socket
         .in(roomId)

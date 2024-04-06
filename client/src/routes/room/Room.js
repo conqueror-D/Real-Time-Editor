@@ -6,6 +6,8 @@ import { generateColor } from "../../utils";
 import './Room.css';
 import LiveChatBar from "./LiveChatBar";
 import { useLocation } from 'react-router-dom';
+import { auth } from "../../firebase";
+import JoinReq from "../../components/joinReq";
 
 import "ace-builds/src-noconflict/mode-javascript";
 import "ace-builds/src-noconflict/mode-typescript";
@@ -26,22 +28,73 @@ import "ace-builds/src-noconflict/ext-searchbox";
 
 export default function Room({ socket }) {
   const location = useLocation();
-  const { username, roomIdToCreatorName, roomIdToRoomName } = location.state || {};
-  const navigate = useNavigate()
-  const { roomId } = useParams()
+  const navigate = useNavigate();
+  const [userName, setUserName] = useState("");
+  const [uid, setUid] = useState("");
+  const { roomId } = useParams();
+  const [roomName, setRoomName] = useState("");
+  const [creatorId, setCreatorId] = useState("");
   const [fetchedUsers, setFetchedUsers] = useState(() => [])
   const [fetchedCode, setFetchedCode] = useState(() => "")
   const [language, setLanguage] = useState(() => "javascript")
   const [codeKeybinding, setCodeKeybinding] = useState(() => undefined)
+  const [requestToJoin, setRequestToJoin] = useState(false);
+  const [guestId, setGuestId] = useState("");
+  const [gName, setGName] = useState("");
 
   const languagesAvailable = ["javascript", "java", "c_cpp", "python", "typescript", "golang", "yaml", "html"];
   const codeKeybindingsAvailable = ["default", "emacs", "vim"];
 
   useEffect(() => {
-    console.log('Username:', username);
-    console.log('Room ID to Creator Name Map:', roomIdToCreatorName);
-    console.log('Room ID to Room Name Map:', roomIdToRoomName);
+    const fetchUserData = async () => {
+      try {
+        if (auth) {
+          const currentUser = auth.currentUser.displayName;
+          const currentId = auth.currentUser.uid;
+          if (currentUser && currentId) {
+            setUid(currentId);
+          };
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
   }, []);
+
+  //Fetching room name and creator id from database
+  useEffect(() => {
+    const fetchCreatorId = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/getCreator/${roomId}`);
+        const data = await response.json();;
+        setCreatorId(data.creatorId);
+      } catch (error) {
+        console.error('Error fetching creatorId:', error);
+      }
+    };
+    const fetchRoomName = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/getRoomName/${roomId}`);
+        const data = await response.json();
+        setRoomName(data.rName);
+      } catch (error) {
+        console.error('Error fetching creatorId:', error);
+      }
+    }
+    if (roomId) {
+      fetchRoomName();
+    }
+    if (roomId && roomName) {
+      fetchCreatorId();
+    }
+  }, [roomId, roomName]);
+
+  useEffect(() => {
+    const { username } = location.state || {};
+    setUserName(username);
+  }, [location.state]);
 
   function onChange(newValue) {
     setFetchedCode(newValue)
@@ -66,13 +119,16 @@ export default function Room({ socket }) {
 
   function copyToClipboard(text) {
     try {
+      console.log('Username:', userName);
+      console.log("Uid: ", uid);
+      console.log('Room ID: ', roomId);
+      console.log("Creator id: ", creatorId);
       navigator.clipboard.writeText(text);
       toast.success('Room ID copied');
     } catch (exp) {
       console.error(exp)
     }
   }
-
   useEffect(() => {
     socket.on("updating client list", ({ userslist }) => {
       setFetchedUsers(userslist)
@@ -82,15 +138,24 @@ export default function Room({ socket }) {
       setLanguage(languageUsed)
     })
 
+    socket.on("join_req_to_user", ({ creatorId, userId, guestName }) => {
+      setGuestId(userId);
+      setGName(guestName);
+      if (creatorId === uid) {
+        setRequestToJoin(true);
+      }
+    })
+
     socket.on("on code change", ({ code }) => {
       setFetchedCode(code)
     })
 
-    socket.on("new member joined", ({ userName }) => {
-      toast(`${userName} joined`)
+    socket.on("new member joined", ({ username }) => {
+      toast(`${username} joined`)
     })
 
     socket.on("member left", ({ userName }) => {
+      console.log(userName);
       toast(`${userName} left`)
     })
 
@@ -102,9 +167,16 @@ export default function Room({ socket }) {
     });
 
     return () => {
+      if (socket) {
+        socket.off("join_req_to_user");
+      }
       window.removeEventListener("popstate", backButtonEventListner)
     }
-  }, [socket])
+  }, [socket, uid])
+
+  const handleRes = (res) => {
+    setRequestToJoin(false);
+  }
 
   return (
     <div className="room">
@@ -118,7 +190,6 @@ export default function Room({ socket }) {
               ))}
             </select>
           </div>
-
 
           <div className="languageFieldWrapper">
             <select className="languageField" name="codeKeybinding" id="codeKeybinding" value={codeKeybinding} onChange={handleCodeKeybindingChange}>
@@ -138,7 +209,17 @@ export default function Room({ socket }) {
             ))}
           </div>
         </div>
-
+        {requestToJoin && (
+          <JoinReq
+            userId={guestId}
+            guestName={gName}
+            roomId={roomId}
+            onRes={handleRes}
+          />
+        )}
+        <div>
+          {"Room name: " + roomName}
+        </div>
         <button className="roomSidebarCopyBtn" onClick={() => { copyToClipboard(roomId) }}>Copy Room id</button>
         <button className="roomSidebarBtn" onClick={() => {
           handleLeave()

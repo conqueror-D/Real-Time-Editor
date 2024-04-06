@@ -4,6 +4,9 @@ import { v4 as uuidv4, validate } from "uuid";
 import { auth } from "../../firebase";
 import { Toaster, toast } from "react-hot-toast";
 import "./JoinRoom.css";
+import { io } from 'socket.io-client';
+
+const socket = io('http://localhost:5000');
 
 const LoginForm = ({ isOpen, onClose, onCreateRoom }) => {
   const [roomName, setRoomName] = useState("");
@@ -11,18 +14,20 @@ const LoginForm = ({ isOpen, onClose, onCreateRoom }) => {
   const [userId, setUserId] = useState("");
 
   useEffect(() => {
-    const currentUser = auth.currentUser.displayName;
-    const currentId = auth.currentUser.uid;
-    if (currentUser && currentId) {
-      setUserId(currentId);
-      setUserName(currentUser);
-    };
-    // console.log("User name: " + currentUser + " User id: " + currentId);
+    if (auth.currentUser) {
+      const currentUser = auth.currentUser.displayName;
+      const currentId = auth.currentUser.uid;
+      if (currentUser && currentId) {
+        setUserId(currentId);
+        setUserName(currentUser);
+      };
+    }
   }, []);
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    onCreateRoom(roomName);
+    console.log("Ui: ", userId);
+    onCreateRoom(roomName, userId);
     onClose();
   };
 
@@ -56,6 +61,7 @@ const LoginForm = ({ isOpen, onClose, onCreateRoom }) => {
     </div>
   );
 };
+
 export default function JoinRoom() {
   const navigate = useNavigate();
   const [roomId, setRoomId] = useState("");
@@ -65,16 +71,48 @@ export default function JoinRoom() {
   const [changable, setChangable] = useState(false);
   const [roomName, setRoomName] = useState();
   const [uid, setUid] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(false);
+  const [alreadyJoined, setAlreadyJoined] = useState(false);
 
   useEffect(() => {
-    const currentUser = auth.currentUser.displayName;
-    const currentId = auth.currentUser.uid;
-    if (currentUser && currentId) {
-      setUid(currentId);
-      setUsername(currentUser);
-    };
-    // console.log("User name: " + currentUser + " User id: " + currentId);
-  }, []);
+    !alreadyJoined && username && navigate(`/room/${roomId}`, {
+      state: { username },
+    });
+  }, [response])
+
+  useEffect(() => {
+    socket.on("creators_response", ({ res, roomId }) => {
+      console.log("Received creators_response with roomId:", roomId);
+      console.log(res);
+      setResponse(res);
+    }, []);
+
+    const backButtonEventListner = window.addEventListener("popstate", function (e) {
+      const eventStateObj = e.state
+      if (!('usr' in eventStateObj) || !('username' in eventStateObj.usr)) {
+        socket.disconnect()
+      }
+    });
+
+    return () => {
+      if (socket) {
+        socket.off("join_req_to_user");
+      }
+      window.removeEventListener("popstate", backButtonEventListner)
+    }
+  }, [socket]);
+  useEffect(() => {
+    if (auth.currentUser) {
+      const currentUser = auth.currentUser.displayName;
+      const currentId = auth.currentUser.uid;
+      if (currentUser && currentId) {
+        setUid(currentId);
+        setUsername(currentUser);
+      };
+      // console.log("User name: " + currentUser + " User id: " + currentId);
+    }
+  }, [auth.currentUser]);
 
   const handleRoomSubmit = async (e) => {
     e.preventDefault();
@@ -82,37 +120,44 @@ export default function JoinRoom() {
       toast.error("Incorrect room ID");
       return;
     }
+    setLoading(true);
     try {
-      username &&
+      const response = await fetch('http://localhost:5000/database', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          roomId: roomId,
+          roomName: roomName,
+          uid: uid,
+          username: username,
+        }),
+      });
+
+      if (!roomName) {//This means that this is a meeting attendee and not a creator
+        //Sending join request to the creator
+        console.log('req sent');
+        socket.emit('join_room_request', { roomId: roomId, userId: uid });
+      }
+      if (roomName && username) {
+        setAlreadyJoined(true);
         navigate(`/room/${roomId}`, {
           state: { username },
         });
-      // const response = await fetch('http://localhost:5000/database', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     roomId: roomId,
-      //     username: username,
-      //     roomName: roomName,
-      //     uid: uid,
-      //   }),
-      // });
+      }
 
-      // if (!response.ok) {
-      //   throw new Error('Failed to send data to server');
-      // }
+      // Check if response is successful
+      if (!response.ok) {
+        throw new Error('Failed to send data to server');
+      }
+
       toast.success('Data sent to server successfully');
     } catch (error) {
       console.error('Error:', error);
       toast.error('Failed to send data to server');
     }
     toast.success("Joined " + roomName);
-    username &&
-      navigate(`/room/${roomId}`, {
-        state: { username },
-      });
   }
 
   function createRoomId() {
@@ -120,11 +165,12 @@ export default function JoinRoom() {
     setJoinRoom(false);
   }
 
-  const handleCreateRoom = (rName) => {
+  const handleCreateRoom = (rName, userId) => {
     try {
       const id = uuidv4();
       setRoomId(id);
       setRoomName(rName);
+      setUid(userId);
       toast.success("Room created: " + rName);
     } catch (exp) {
       console.error(exp);
@@ -176,8 +222,8 @@ export default function JoinRoom() {
             </label>
           </div>
 
-          <button className="joinBoxBtn" type="submit">
-            Join
+          <button className="joinBoxBtn" type="submit" disabled={loading}>
+            {loading ? 'Loading ....' : 'Join room'}
           </button>
           <p>
             If you don't have a Room ID, then create a{" "}

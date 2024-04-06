@@ -24,7 +24,7 @@ const HomeComponent = () => {
       } else {
         setUser(null);
       }
-    });
+    }, []);
 
     // Check if there is a redirect result
     getRedirectResult(auth)
