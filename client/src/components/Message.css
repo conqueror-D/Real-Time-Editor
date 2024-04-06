@@ -36,3 +36,20 @@
 .chat-bubble.right .chat-bubble__right {
   padding-right: 10px;
 }
+
+/* New CSS to differentiate sender messages */
+.chat-bubble__right {
+  background-color: #dcf8c6; /* Light green background for sender messages */
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.chat-bubble__left {
+  background-color: #e0e0e0; /* Light grey background for recipient messages */
+  border-radius: 10px;
+  padding: 8px;
+}
+
+.chat-bubble {
+  max-width: 70%; /* Limiting message width for better readability */
+}
